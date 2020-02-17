@@ -1,0 +1,45 @@
+.textContainer {
+    display: flex;
+    flex-direction: column;
+    color:#2979FF;
+    height: 100%;
+    width: 15%;
+    justify-content: space-between;
+    border: 3px solid #2979FF;
+  }
+  
+  .activeContainer {
+    display: flex;
+    align-items: center;
+    flex-wrap:wrap;
+    margin-bottom: 50%;
+  }
+
+  .inTextContainer {
+    margin-left: 10px;
+  }
+
+  
+  .activeItem {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    width:100%;   /* При таком значении помещается 16 цифр в usersBar */
+    max-width:250px;
+    font-size: 110%;  /* При таком значении помещается 16 цифр в usersBar */
+  }
+  
+  .textContainer h1 {
+    margin-bottom: 10px;
+    margin-left: 30%;
+  }
+
+  .activeContainer img {
+    padding-left: 10px;
+  }
+  
+  @media (max-width: 1200px) {
+    .textContainer {
+      display: none;
+    }
+  }
