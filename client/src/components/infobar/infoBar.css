@@ -24,6 +24,9 @@
   margin-right: 5%;
 }
 
+.child-button + .child-button {
+  margin-left: 16px;
+}
 .onlineIcon {
   margin-right: 5%;
 }

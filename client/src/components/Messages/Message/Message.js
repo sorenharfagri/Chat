@@ -12,7 +12,8 @@ let isSentByCurrentUser = false;               //Если сообщение п�
 
 const trimmedName = name.trim().toLowerCase(); //Форматирование имени отправителя для проверки
 
-if (user === trimmedName)  isSentByCurrentUser = true;       //Сравнение имени отправителя с именем юзера     
+if (user === trimmedName) 
+{ isSentByCurrentUser = true; }      //Сравнение имени отправителя с именем юзера     
 
 
 return (

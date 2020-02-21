@@ -25,7 +25,12 @@ const Join = () =>{
             <div className="joinInnerContainer">
             <h1 className="heading">Join</h1>
 
-            <div><input placeholder={validation} value={name} className="joinInput" type="text" maxlength="16" onChange={(event) => setName(event.target.value)}/></div>
+            <div><input 
+            placeholder={validation} 
+            value={name} 
+            className="joinInput" 
+            type="text" maxLength="16" 
+            onChange={(event) => setName(event.target.value)}/></div>
             <Link to={`/chat`}>  {/* Перенаправление в чат после валидного инпута. Здесь можно добавить ?room=${room}, чтобы пользователь мог сразу скопировать ссылку, без нажатия на соответсвующую кнопку в чате */}
              
             <button onClick={(event) =>  {
