@@ -2,7 +2,7 @@
 
 "npm i" в client и server
 
-Затем:
+Затем
 npm start в client.
 
 nodemon app.js в server.
