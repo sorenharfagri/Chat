@@ -9,9 +9,7 @@ import App from './App';
 //Начальное состояние store
 const initialState = {
     name: "",                //Имя пользователя
-    room: "",                //Комната
-    notConnected : true,     //Установлено ли соединение с пользователем
-    test: "BAD"
+    room: ""              //Комната
 }
 
 
@@ -20,7 +18,6 @@ function name(state=initialState, action)
     switch(action.type) {
         case "CHANGE_NAME": return Object.assign({}, state, {name:action.payload} );  //Метод для получения имени в store
         case "CHANGE_ROOM": return Object.assign({}, state, {room:action.payload} );  //Метод для получения логина в store
-        case "NOT_CONNECTED": return Object.assign({}, state, {notConnected:action.payload} ); //Метод предназначенный для избежания повторных соединений в chat.js
         default: return state;
     }
 }
