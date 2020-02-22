@@ -10,7 +10,6 @@ import Input from '../Input/input.js';
 import UsersList from '../UsersList/UsersList';
 import ChatJoinForm from "../ChatJoinForm/ChatJoinForm";
 
-/* import WebChat from "../WebChat/WebChat"; */
 import './Chat.css';
 
 //Данный компонент отвечает за страницу чата, и логику сокетов на клиентской части
@@ -20,7 +19,7 @@ let socket; //Резерв для сокета
 
 const Chat = ({location}) => {      //location - объект роутера содержащий в себе информацию о текущем url
 
-  const ENDPOINT = 'localhost:5000'; //Endpoint сокета
+  const ENDPOINT = "https://react-node-chatapplication.herokuapp.com" //Endpoint сокета
 
   const [reduxStore] = useState(store.getState()); //Получение хранилища
 
@@ -63,7 +62,7 @@ const Chat = ({location}) => {      //location - объект роутера с�
       if(loginStatus === "HasNameAndRoom") {      //Если пользователь подключился с Join-а, происходит подключение к комнате.
       setLoginStatus("ConnectedFromLogin");             //Изменения стейта во избежании повторного подключения
       socket.emit('join', { name, room }, (error) => {         //Подключение к комнате
-         if(error) alert (error);
+         if(error) { setLoginStatus("NoNameHasRoom"); }
           });
         }
     }, [ENDPOINT, room, name, loginStatus, connectionStatus]);

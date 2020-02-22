@@ -10,8 +10,11 @@ const PORT =  process.env.PORT  || 5000;
 const server = http.createServer(app);
 const io =  socketio(server);
 
- 
 
+app.get("/", (req, res ) =>
+{
+   res.send({ response: "Server is up and running." }).status(200);
+})
 
 io.on('connection', (socket) =>{
 console.log('New connection');
