@@ -118,7 +118,7 @@ return (
 <div className="outerContainer">
 <div className="myContainer">
 <InfoBar isShowWeb={isShowWeb} setShowWeb={setShowWeb}room={room} /> {/* Infobar сверху страницы, принимает в себя комнату для отображения ссылки приглашения */}
-{/* <WebChat />                                                    */}    <Messages messages={messages} name={name}/>                               {/* Модуль отрисовки сообщений, применяется после получения обработанного сообщения с сервера*/}
+<Messages messages={messages} name={name}/>                               {/* Модуль отрисовки сообщений, применяется после получения обработанного сообщения с сервера*/}
 <Input message={message} setMessage={setMessage} sendMessage={sendMessage}/>     {/* Инпут сообщений, формирует и отправляет сообщение на сервер*/}
 </div>
 <UsersList users={users}/>                                                      {/* Список пользователей */}
