@@ -19,7 +19,7 @@ let socket; //Резерв для сокета
 
 const Chat = ({location}) => {      //location - объект роутера содержащий в себе информацию о текущем url
 
-  const ENDPOINT = "https://react-node-chatapplication.herokuapp.com" //Endpoint сокета
+  const ENDPOINT = 'localhost:5000' //Endpoint сокета
 
   const [reduxStore] = useState(store.getState()); //Получение хранилища
 
