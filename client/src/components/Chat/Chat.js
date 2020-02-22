@@ -19,7 +19,7 @@ let socket; //Резерв для сокета
 
 const Chat = ({location}) => {      //location - объект роутера содержащий в себе информацию о текущем url
 
-  const ENDPOINT = 'localhost:5000' //Endpoint сокета
+  const ENDPOINT = "localhost:5000"; //Endpoint сокета
 
   const [reduxStore] = useState(store.getState()); //Получение хранилища
 
@@ -29,7 +29,6 @@ const Chat = ({location}) => {      //location - объект роутера с�
   const [message, setMessage] = useState(''); //Сообщение 
   const [messages, setMessages] = useState([]); //Массив сообщений
   const [users, setUsers] = useState('');       //Массив пользователей комнаты  //Placeholder input-а в форме логина.
-  const [isShowWeb, setShowWeb] = useState(false);
 
     const [connectionStatus, setConnectionStatus] = useState (false); //Стейт отвечающий за соединение с сокетом
 
@@ -117,7 +116,7 @@ const Chat = ({location}) => {      //location - объект роутера с�
 return (  
 <div className="outerContainer">
 <div className="myContainer">
-<InfoBar isShowWeb={isShowWeb} setShowWeb={setShowWeb}room={room} /> {/* Infobar сверху страницы, принимает в себя комнату для отображения ссылки приглашения */}
+<InfoBar room={room} /> {/* Infobar сверху страницы, принимает в себя комнату для отображения ссылки приглашения */}
 <Messages messages={messages} name={name}/>                               {/* Модуль отрисовки сообщений, применяется после получения обработанного сообщения с сервера*/}
 <Input message={message} setMessage={setMessage} sendMessage={sendMessage}/>     {/* Инпут сообщений, формирует и отправляет сообщение на сервер*/}
 </div>
