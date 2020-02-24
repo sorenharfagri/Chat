@@ -4,7 +4,7 @@ const http = require ('http');
 const app = express();
 const moment = require('moment');
 
-const {addUser, removeUser, getUser, getUsersInRoom} = require ('./users.js'); //Методы для работы с пользователями
+const {addUser, removeUser, getUser, checkNickname, getUsersInRoom} = require ('./users.js'); //Методы для работы с пользователями
 const PORT =  process.env.PORT  || 5000;
 
 const server = http.createServer(app);
@@ -43,8 +43,17 @@ const user = getUser(socket.id);  //Получение отправителя с
 
 const date = moment().format('LTS'); //Формирование даты отправки 
 
-io.to(user.room).emit('message', {user: user.name, text:message, date:date}); //Отправка сформированного сообщения в комнату.
+io.to(user.room).emit('message', {user: user.name, text:message, date:date}); //Отправка сформированного сообщения в комнату
 
+
+callback();
+});
+
+socket.on('checkNickname', ({name, room}, callback) => { //Лисенер для проверки на повторяющийся никнейм в комнате
+
+const error = checkNickname({name, room})
+
+if(error) {return callback(error);}
 
 callback();
 });
