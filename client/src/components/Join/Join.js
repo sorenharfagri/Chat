@@ -49,7 +49,7 @@ console.log('Itteration')
             placeholder={roomValidation}           //Инпут комнаты
             value={room} 
             className="joinInput" 
-            type="text" maxLength="16" 
+            type="text" maxLength="45" 
             onChange={(event) => setRoom(event.target.value)}/></div>
 
 
