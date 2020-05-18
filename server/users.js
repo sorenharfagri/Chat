@@ -30,4 +30,13 @@ const getUser = (id) => users.find((user) => user.id === id); //Получени
 
 const getUsersInRoom = (room) => users.filter((user) => user.room === room); //Получение списка пользователей комнаты
 
-module.exports = { addUser, removeUser, getUser, getUsersInRoom };
+
+const checkNickname = ({name, room}) => //Проверка на потворяющийся никенйм в комнате.
+{
+  name = name.trim().toLowerCase();
+  room = room.trim().toLowerCase(); 
+  const existingUser = users.find((user) => user.room === room && user.name === name);
+  if(existingUser) return { error: 'Username is taken.' };
+}
+
+module.exports = { addUser, removeUser, getUser, getUsersInRoom, checkNickname };
