@@ -26,7 +26,6 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
 
   //Стример
   useEffect(() => {
-    console.log("useEffect did mount");
 
 
     //Функции для getUserMedia
@@ -41,7 +40,6 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
       stream = translation;                                //Получение медиа в переменную, для дальнейшего добавления трансляций
 
       localVideoref.current.srcObject = stream;            //Получаем локальный стрим для наблюдения своей физиономии на видеокамере
-      console.log("Stream added");
       socket.emit("videoChatConnect");                    //Оповещаем клиентов в комнате о начале трансляции
     };
 
@@ -53,7 +51,6 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
     return () => {             //Обработка отключения стрима
       if(stream){
         stream.getTracks().forEach(track => track.stop()); //Отключение медиатрансляции
-        console.log("Endup the stream");
       }
     };
         
@@ -62,33 +59,27 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
 
 
   useEffect(() => {
-    console.log("Use layout effect initialized");
 
     //Функция для создания создания нового пира
     
     const createPeerConnection = (socketID, callback) => {
-      console.log("Emmited createPeerConnection");
 
       try { 
         let pc = new RTCPeerConnection(iceServers); //Создаём новый пир
 
         if (stream) {                     //Добавляем в него ранее полученный стрим
           pc.addStream(stream);
-          console.log("Stream added in peer connection");
         }
 
         //Добавляем новоиспечённый пир в коллекцию соединений
         //Уникальным идентификатором пира, для обращения к нему, является socketID получаемый с сервера
         peerConnections = {...peerConnections, [socketID]: pc}; 
 
-        console.log(`New peer connection with id ${socketID} initialized`);
-
 
         pc.onicecandidate = (e) => { //Отправляем кандидатов на клиента
           if(e.candidate) {
-            console.log(`Candidate sent`);
             socket.emit(`CandidateForClient`, e.candidate, socketID);
-          } else console.log("All candidates sent");
+          } else console.log("All candidates was sent");
         }
 
         pc.close = () => console.log("Peer connection closed");
@@ -105,7 +96,6 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
 
     //Подключение нового пира
     socket.on("NewPeerOnStreamer", (socketID) => {
-      console.log("Got new offer");
 
       createPeerConnection(socketID, pc => {  //Создание нового пира, уникальным идентификатором подключения служит socketid, который передаётся с сервера. 
  
@@ -113,7 +103,6 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
         pc.createOffer(offerOptions) //В случае успешного создания формируем оффер, устанавливаем локальное описание
         .then(sdp => {
           pc.setLocalDescription(sdp);
-          console.log(`Local description set, pc created with id ${socketID}`)
           socket.emit("OfferFromStreamer", sdp, socketID );       //Отправляем описание на клиента
         })
       })
@@ -124,7 +113,6 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
       let pc = peerConnections[socketID];
 
       if (pc) { //В случае если пир с полученным socketid существует, добавляем кандидата
-        console.log(`Got candidate `);
 
         //Обработка успшеного добавления кандидата
         const onAddIceCandidateSuccess = () => console.log(`Added ice candidate`);
@@ -137,11 +125,7 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
             onAddIceCandidateSuccess(candidate),
             onAddIceCandidateError
           )   
-      } else { //В ином случае отлавливаем ошибку
-        console.log("Something went wrong in socket GetCandidateOnStreamer");
-        console.log(`Pc is ${pc}`);
-        console.log(`Socket id is ${socketID}`);
-      };
+      }
     });
 
 
@@ -162,7 +146,6 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
     });
 
     return () => { 
-      console.log("disconnected");
       socket.off("NewPeerOnStreamer");
       socket.off("GotAnswerOnStreamer");
       socket.off("GetCandidateOnStreamer");
@@ -170,8 +153,6 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
              
   });
 
-
-  console.log("Component did mount");
 
   return (
      <div className="webOuter">

@@ -4,8 +4,8 @@
 const users = []; //Массив подключенных к комнате пользователей
 
 const addUser = ({ id, name, room }) => { //Добавление в комнату нового пользователя. id = socket.id
-  name = name.trim().toLowerCase();  //Валидация
-  room = room.trim().toLowerCase();  
+  name = name.trim().toLowerCase(); //Валидация
+  room = room.trim().toLowerCase();
 
   const existingUser = users.find((user) => user.room === room && user.name === name); //Проверка на существующего в комнате пользователя
 

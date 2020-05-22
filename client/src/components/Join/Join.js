@@ -16,7 +16,7 @@ const Join = () =>{
     const [nameValidation, setNameValidation] = useState('Name'); //validation статусы отвечают за placeholder-ы инпутов, обработка ошибок будет вестись через них
     const [roomValidation, setRoomValidation] = useState('Room');
     const [authStatus, setAuthStatus] = useState(false); //Статус аутентификации.
-    const [ENDPOINT] = useState ("localhost:5000"); //Endpoint сокета
+    const [ENDPOINT] = useState ("localhost:80"); //Endpoint сокета
 
     
 if(authStatus) return <Redirect to={`/chat`}/> //В случае если пользователь прошёл валидацию - редирект на чат.
@@ -30,7 +30,6 @@ var checkstore = store.getState(); //Сброс имеющейся сессии,
         store.dispatch({type: "CHANGE_ROOM", payload: ""}); //Убран getstate
 };
 
-console.log('Itteration')
 
     return (
         <div className="joinOuterContainer">
@@ -49,7 +48,7 @@ console.log('Itteration')
             placeholder={roomValidation}           //Инпут комнаты
             value={room} 
             className="joinInput" 
-            type="text" maxLength="16" 
+            type="text" maxLength="45" 
             onChange={(event) => setRoom(event.target.value)}/></div>
 
 

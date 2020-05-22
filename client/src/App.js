@@ -6,7 +6,7 @@ import Join from './components/Join/Join'
 import Chat from './components/Chat/Chat'
 import NotFound from './components/NotFound/NotFoundPage';
 
-//Join - хоумпейдж, с него пользователи отправляютсы в рандомную комнату
+//Join - хоумпейдж, с него пользователи отправляются в рандомную комнату
 //Chat - непосредственно страничка чата
 //NotFound - страница 404 ошибки
 

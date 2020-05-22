@@ -10,11 +10,12 @@
 }
 
 .leftInnerContainer {
-  flex: 0.5;
   display: flex;
   align-items: center;
   margin-left: 5%;
   color:white;
+  max-height:100%;
+  flex-grow: 1;
 }
 
 .rightInnerContainer {
@@ -24,8 +25,14 @@
   margin-right: 5%;
 }
 
+.child-button {
+  padding: 5px;
+  max-height: 35px;
+  text-align:center;
+}
+
 .child-button + .child-button {
-  margin-left: 16px;
+  margin-left: 15px;
 }
 .onlineIcon {
   margin-right: 5%;

@@ -17,15 +17,12 @@ const WebChatClient = ({socket}) => {
 
   //Работа с сокетами
   useEffect(() => {
-    console.log(`Socket id is ${socket.id}`)
  
 
     //Получение оффера со стримера, установко удалённого и локального описания, отправление ответа стримеру
     socket.on(`${socket.id}:GetOfferFromStreamer`, streamerdesc => {
-      console.log("Get offer socket emitted")
 
 
- 
       //Обработка ошибок на уровне установления локалього/удалённого sdp
       const onSetRemoteDescriptionError = (e) => console.log(`Error in setRemoteDescription ${e}`);
  
@@ -34,7 +31,6 @@ const WebChatClient = ({socket}) => {
 
       //В случае успешной установки удалённого sdp, создаём ответ
       const onSetRemoteSuccess = () => {
-        console.log("Remote description set complete");
         pc.createAnswer()
         .then (
           onCreateAnswerSuccess,
@@ -44,7 +40,6 @@ const WebChatClient = ({socket}) => {
                
       //В случае успешного создания ответа, устанавливаем локальный sdp
       const onCreateAnswerSuccess = (desc) => {
-        console.log(`Answer created`);
  
         pc.setLocalDescription(new RTCSessionDescription(desc))
         .then (
@@ -55,7 +50,6 @@ const WebChatClient = ({socket}) => {
 
       //В случае успешного установления локалього sdp, отправляем его стримеру
       const onSetLocalDescriptionSuccess = (desc) => {
-        console.log(`Local description set and sent`)
         socket.emit("AnswerForStreamer", desc, socket.id)
       }               
                
@@ -71,7 +65,6 @@ const WebChatClient = ({socket}) => {
 
     //Получение кандидатов от стримера
     socket.on(`${socket.id}:GetCandidates`, candidate => {
-      console.log("Get candidates socket emitted")
 
       //Обработка успешого добавления кандидата
       const onAddIceCandidateSuccess = () => console.log(`Added ice candidate`);
@@ -87,12 +80,10 @@ const WebChatClient = ({socket}) => {
       );             
     });       
 
-    console.log("Sockets initialized")
 
     return () => {
       socket.off(`${socket.id}:GetOfferFromStreamer`);
       socket.off(`${socket.id}:GetCandidates`);
-      console.log("Disconnected")
     }
 
   }, [socketStatus, socket]);
@@ -104,12 +95,10 @@ const WebChatClient = ({socket}) => {
 
     pc = new RTCPeerConnection(iceServers);
       
-    console.log("Peer connection initialized on client");
           
     //Получаем стрим при его наличии
     pc.ontrack = (e) =>{
       localVideoref.current.srcObject = e.streams[0];
-      console.log("Got the stream");
     };
 
 
@@ -134,18 +123,13 @@ const WebChatClient = ({socket}) => {
     //Стример же создаст для нового пира оффер, и перешлёт его клиенту
 
     socket.emit("NewPeer", socket.id);
-    console.log("Sent request for offer");
-
 
     return () => {
-      console.log("Disconnected");
       pc.close();
     };
   
   },[socket, localVideoref]);
 
-
- console.log("Component did mount");
 
  return (
     <div className="webOuter">

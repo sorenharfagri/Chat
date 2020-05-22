@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import {createStore} from "redux";
 import App from './App';
 
-
 //Работа с Redux
 
 //Начальное состояние store
@@ -13,7 +12,7 @@ const initialState = {
 }
 
 
-function name(state=initialState, action)
+function rootReducer(state=initialState, action)
 {
     switch(action.type) {
         case "CHANGE_NAME": return Object.assign({}, state, {name:action.payload} );  //Метод для получения имени в store
@@ -22,11 +21,7 @@ function name(state=initialState, action)
     }
 }
 
-const store = createStore(name);
-
-
-
-
+const store = createStore(rootReducer);
 
 
 ReactDOM.render(<App />, document.querySelector('#root'));

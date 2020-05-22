@@ -12,11 +12,9 @@ const WebcamButton = ({socket, setLocalVideoChatStatus, localVideoChatStatus}) =
         variant="light"
         onClick={ () => {
           if(!localVideoChatStatus) {                          //В случае если кнопка ранее не была нажата 
-
             console.log("Success");
             setLocalVideoChatStatus(!localVideoChatStatus); //Устанавливаем локальный статус, который задействует компонент отвечающий за стрим 
           } else {                                          //В случае повторного нажатия изменяем статус на обратное логическое значнеие, т.е убираем компонент
-            
             setLocalVideoChatStatus(!localVideoChatStatus);
             console.log("Wanna turn off");
             socket.emit("videoChatConnect");             //Оповещаем пользователей об окончании трансляции

@@ -2,14 +2,15 @@ import React, {useState} from 'react';
 import {Button, Modal} from 'react-bootstrap';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 
+//Данный компонент отвечает за инвайт пользователя в комнату
+
 
 const InviteButton = ({room}) => {
-    const [isShow, setShow] = useState(false);
+    const [isShow, setShow] = useState(false);                      //Стейт отвечающий за отображение всплываюещго окна
     const url = window.location.hostname+":3000/chat?room="+room;
 
         return (
-           <div className="child-button">
-        <Button variant="light" onClick={(e)=>setShow(!isShow)}>Invite friend</Button>
+        <Button className="child-button" variant="light" onClick={(e)=>setShow(!isShow)}>Invite friend
        {isShow ? <>
       <Modal size="lg" show={isShow} onHide={()=>setShow(!isShow)}>
         <Modal.Header closeButton>
@@ -29,7 +30,7 @@ const InviteButton = ({room}) => {
         </Modal.Footer>
       </Modal>
       </> : null}
-      </div>
+      </Button>
     )
 };
 
