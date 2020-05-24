@@ -90,6 +90,7 @@ const WebChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}
         alert(`Something went wrong! pc not created!!, ${e}`)
         callback(null);
       } 
+      
     }
 
     //Сокеты для работы с подключениями на стримере

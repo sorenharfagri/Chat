@@ -6,11 +6,22 @@ import uuidv4 from "uuid/v4";
 
 
 //Модуль для отрисовки сообщений
+//Принимает объект с сообщениями
+//Итерируется по нему и создаёт сообщения
+//Само сообщение выведено в отдельный компонент
 
-const Messages = ({messages, name}) => (   //Принимает в себя полученное с сервера сообщение и его данные. Далее направляет данные в компонент сообщения, модель которого выведена в отдельный компонент
-<ScrollToBottom className="messages">
-{messages.map((message) => <div key={uuidv4()}><Message message={message} name={name} date={messages.date}/></div>)} {/* Отрисовка имеющихся сообщений */}
-</ScrollToBottom>
+const Messages = ( { messages, name } ) => (
+  <ScrollToBottom className="messages">
+       { messages.map( (message) =>
+          <div key={ uuidv4() } > 
+              <Message 
+                  message={message} 
+                  name={name} 
+                  date={messages.date}
+               />
+          </div> 
+        )}
+   </ScrollToBottom>
 );
 
 

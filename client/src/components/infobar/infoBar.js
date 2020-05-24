@@ -9,26 +9,29 @@ import WebcamButton from "./WebcamButton/WebcamButton";
 
 const InfoBar = ({room, globalVideoChatStatus, setLocalVideoChatStatus, socket, localVideoChatStatus}) => {
 
+  //InviteButton - овтечает за инвайт пользователя в комнату
+  //WebcamButton - отвечает за включение/отключение видеотрансляции
+  return (
+      <div className="infoBar">
+          <div className="leftInnerContainer">
+              <img className="onlineIcon" src={onlineIcon} alt="online"></img>
+              <InviteButton room={room}/>                                        
+              {!globalVideoChatStatus ?
+                  <WebcamButton 
+                      socket={socket} 
+                      setLocalVideoChatStatus={setLocalVideoChatStatus} 
+                      localVideoChatStatus={localVideoChatStatus}
+                    /> 
+               : null }
+           </div>
 
-//По нажатию inviteButton появляется всплывающее окно с ссылкой в данный чат
-
-
-//InviteButton - овтечает за инвайт пользователя в комнату
-//WebcamButton - отвечает за включение/отключение видеотрансляции
-return (
-<div className="infoBar">
-    <div className="leftInnerContainer">
-<img className="onlineIcon" src={onlineIcon} alt="online"></img>
-<InviteButton room={room}/>                                        
-{!globalVideoChatStatus ?
-<WebcamButton socket={socket} setLocalVideoChatStatus={setLocalVideoChatStatus} localVideoChatStatus={localVideoChatStatus}/> : null}
-    </div>
-    <div className="rightInnerContainer">
-<a href="/"><img src={closeIcon} alt="close"/></a>
-    </div>
-</div>
-)
-
+           <div className="rightInnerContainer">
+              <a href="/"> 
+                  <img src={closeIcon} alt="close"/>
+              </a>
+           </div>
+       </div>
+    );
 };
 
 export default InfoBar;

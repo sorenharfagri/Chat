@@ -13,7 +13,7 @@ const WebcamButton = ({socket, setLocalVideoChatStatus, localVideoChatStatus}) =
         onClick={ () => {
           if(!localVideoChatStatus) {                          //В случае если кнопка ранее не была нажата 
             console.log("Success");
-            setLocalVideoChatStatus(!localVideoChatStatus); //Устанавливаем локальный статус, который задействует компонент отвечающий за стрим 
+            setLocalVideoChatStatus(!localVideoChatStatus); //Устанавливаем локальный статус, который задействует компонент отвечающий за трансляцию на стороне стримера
           } else {                                          //В случае повторного нажатия изменяем статус на обратное логическое значнеие, т.е убираем компонент
             setLocalVideoChatStatus(!localVideoChatStatus);
             console.log("Wanna turn off");
@@ -22,7 +22,7 @@ const WebcamButton = ({socket, setLocalVideoChatStatus, localVideoChatStatus}) =
         }} 
       >{localVideoChatStatus ? "Turn off webcam" : "Turn on webcam"}</Button>
    </>
-  )    
+  );    
 };
 
 export default WebcamButton;

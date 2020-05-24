@@ -15,8 +15,8 @@ const initialState = {
 function rootReducer(state=initialState, action)
 {
     switch(action.type) {
-        case "CHANGE_NAME": return Object.assign({}, state, {name:action.payload} );  //Метод для получения имени в store
-        case "CHANGE_ROOM": return Object.assign({}, state, {room:action.payload} );  //Метод для получения логина в store
+        case "CHANGE_NAME": return Object.assign( {}, state, {name:action.payload} );  //Метод для получения имени в store
+        case "CHANGE_ROOM": return Object.assign( {}, state, {room:action.payload} );  //Метод для получения логина в store
         default: return state;
     }
 }

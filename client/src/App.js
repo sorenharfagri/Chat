@@ -13,9 +13,9 @@ import NotFound from './components/NotFound/NotFoundPage';
 const App = () => (
     <Router>
         <Switch>
-        <Route path="/" exact component={Join} />
-        <Route path="/chat" exact component={Chat} />
-        <Route component={NotFound}/> 
+          <Route path="/" exact component={Join} />
+          <Route path="/chat" exact component={Chat} />
+          <Route component={NotFound}/> 
         </Switch>
     </Router>
 );
