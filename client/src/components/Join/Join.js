@@ -1,14 +1,13 @@
-import React, { useState} from 'react';
-import {Link} from 'react-router-dom';
-import { store } from "../../index"
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import uuidv4 from "uuid/v4";
 import io from "socket.io-client";
 import './Join.css';
 import { Redirect } from 'react-router-dom'
-import {socket} from '../Chat/Chat';
+import { socket } from '../Chat/Chat';
+import { useDispatch } from 'react-redux'; 
 
 //Данный компонент отвечает за домашнюю страницу, с которой пользователь попадает в случайную комнату
-
 
 const Join = () =>{
   const [name, setName] = useState('');
@@ -18,18 +17,24 @@ const Join = () =>{
   const [authStatus, setAuthStatus] = useState(false); //Статус аутентификации.
   const [ENDPOINT] = useState ("localhost:80"); //Endpoint сокета
 
-    
+  //Имя пользователя и комната передаются в основной компонент чата с помощью Redux-а
+  //В данной форме проводится лишь первичная проверка и обработа данных пользователя
+  //Подключение к сокетам и комнате происходит в главном компоненте Chat.js
+  const dispatch = useDispatch();
+
+
+  useEffect( () => {
+      //Сброс имеющейся сессии, в случае возвращения из комнаты на страницу логина.
+      //Для отключения клиента от комнаты, с последующим удалением из списка пользователей
+      if (socket) {
+          socket.close();
+          dispatch( { type: "SET_NAME", payload: "" } );
+          dispatch( { type: "SET_ROOM", payload: "" } );
+       };
+
+    }, [dispatch])
+
   if (authStatus) return <Redirect to={`/chat`}/> //В случае если пользователь прошёл валидацию - редирект на чат.
-
-
-  var checkstore = store.getState(); //Сброс имеющейся сессии, в случае возвращения из комнаты на страницу логина. Данный факт определяется наличием имени в store-е.
-
-  if (checkstore.name) {     
-      socket.close();
-      store.dispatch( { type: "CHANGE_NAME", payload: "" } );
-      store.dispatch( { type: "CHANGE_ROOM", payload: "" } );
-   };
-
 
   return (
       <div className="joinOuterContainer">
@@ -72,8 +77,8 @@ const Join = () =>{
                             } else {               
                               //Отправка полученного с инпута имени, и рандомной комнаты в store
                               //для дальнейшего их получения на странице чата
-                              store.dispatch( { type: "CHANGE_NAME", payload: name } );
-                              store.dispatch( { type: "CHANGE_ROOM", payload: uuidv4() } );
+                              dispatch( { type: "SET_NAME", payload: name } );
+                              dispatch( { type: "SET_ROOM", payload: uuidv4() } );
                             };
                         }}
                   >Join random room</button>
@@ -107,8 +112,8 @@ const Join = () =>{
                                   socket.close();
                                } else { 
                                   socket.close(); //В ином случае отключаемся от сокета
-                                  store.dispatch( { type: "CHANGE_NAME", payload: name } ); //Отправляем в стор никнейм и комнату, в компонента чата их получим
-                                  store.dispatch( { type: "CHANGE_ROOM", payload: room } );
+                                  dispatch( { type: "SET_NAME", payload: name } ); //Отправляем в стор никнейм и комнату, в компонента чата их получим
+                                  dispatch( { type: "SET_ROOM", payload: room } );
                                   setAuthStatus(true);                                   //Меняется статус аутентификации для дальнейшего редиректа в чат
                                };
                            });

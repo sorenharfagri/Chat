@@ -1,0 +1,14 @@
+.webOuter {
+display: flex;
+max-height: 400px;
+flex: 1 1 auto;
+justify-content: center;
+}
+
+
+.WebBox {
+    max-height: 100%;
+    max-width: 100%;
+    min-width: 40%;
+    object-fit: cover;
+}

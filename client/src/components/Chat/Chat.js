@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Redirect } from 'react-router-dom'
-import { store } from "../../index";
+import { useSelector } from 'react-redux';
 import io from "socket.io-client";
 import queryString from 'query-string';
 
@@ -10,8 +10,8 @@ import Input from '../Input/input.js';
 import UsersList from '../UsersList/UsersList';
 import ChatJoinForm from "../ChatJoinForm/ChatJoinForm";
 
-import WebChatStreamer from "../WebChat/WebChatStreamer";
-import WebChatClient from "../WebChat/WebChatClient";
+import VideoChatStreamer from "../VideoChat/VideoChatStreamer";
+import VideoChatClient from "../VideoChat/VideoChatClient";
 
 import './Chat.css';
 
@@ -25,10 +25,12 @@ const Chat = ({location}) => {      //location - объект роутера с�
 
   const [ENDPOINT] = useState( "localhost:80", {reconnect:true} ); //Endpoint сокета
 
-  const [reduxStore] = useState(store.getState()); //Получение хранилища
+  //Получение данных о комнате и имени со стора Redux, в случае если пользователь перешёл в чат с Join-а
+  const reduxStoreName = useSelector(state => state.name);
+  const reduxStoreRoom = useSelector(state => state.room);
 
   const [query] = useState(queryString.parse(location.search)) //Получение комнаты с query строки
-  const [name, setName] = useState(reduxStore.name); //Получение имени со stor-а (Если оно было получено с хоумпейджа)
+  const [name, setName] = useState(reduxStoreName); //Получение имени со stor-а, в случае если пользователь перешёл в чат с Join-а
   const [message, setMessage] = useState(''); //Сообщение 
   const [messages, setMessages] = useState([]); //Коллекция сообщений
   const [users, setUsers] = useState('');       //Коллекция пользователей комнаты
@@ -38,12 +40,13 @@ const Chat = ({location}) => {      //location - объект роутера с�
 
   const [connectionStatus, setConnectionStatus] = useState (false); //Стейт отвечающий за соединение с сокетом
 
+
   function getRoom () {       //Функция для получения комнаты пользователя
-    let room = reduxStore.room //Получение комнаты со stor-а
+    let room = reduxStoreRoom; //Получение комнаты со stor-а
   
-    if(room) return room
-    else if(query.room) return query.room //В случае неудачи - получение комнаты с query строки
-    else return "";  //В случае отсутствия у пользователя комнаты - возвращается пустое значение, которое в дальнейшем будет обработано.
+    if(room) return room //Если комната в сторе есть - всё отлично, возвращаем
+    else if(query.room) return query.room //В случае неудачи - пробуем получить комнату с query строки
+    else return "";  //В случае отсутствия у пользователя комнаты - возвращается пустое значение, которое в дальнейшем вернет пользователя на Join.js
   }
 
   const [room] = useState(getRoom); //Получение комнаты пользователя c с помощью функции выше
@@ -120,8 +123,8 @@ const Chat = ({location}) => {      //location - объект роутера с�
 
 
  //InfoBar - Панель сверху, на ней располагаются кнопки
- //WebChatClient - Логика видеотрансляции на клиенте
- //webChatStreamer - Видеотраналсяция на стримере
+ //VideoChatClient - Логика видеотрансляции на клиенте
+ //VideoChatStreamer - Видеотраналсяция на стримере
  //Messages - Коллекция сообщений
  //Input - Инпут сообщения
  //UsersList - Список пользователей комнаты
@@ -130,8 +133,8 @@ const Chat = ({location}) => {      //location - объект роутера с�
       <div className="myContainer">
         <InfoBar socket={socket} room={room} globalVideoChatStatus={globalVideoChatStatus} setLocalVideoChatStatus={setLocalVideoChatStatus} localVideoChatStatus={localVideoChatStatus}/> {/* Infobar сверху страницы, принимает в себя комнату для отображения ссылки приглашения */}
 
-        {globalVideoChatStatus ? <WebChatClient socket={socket}/>
-        : localVideoChatStatus ? <WebChatStreamer socket={socket} localVideoChatStatus={localVideoChatStatus} setLocalVideoChatStatus={setLocalVideoChatStatus}/> : null}
+        {globalVideoChatStatus ? <VideoChatClient socket={socket}/>
+        : localVideoChatStatus ? <VideoChatStreamer socket={socket} localVideoChatStatus={localVideoChatStatus} setLocalVideoChatStatus={setLocalVideoChatStatus}/> : null}
 
         <Messages messages={messages} name={name}/>                               {/* Модуль отрисовки сообщений, применяется после получения обработанного сообщения с сервера*/}
         <Input message={message} setMessage={setMessage} sendMessage={sendMessage}/>     {/* Инпут сообщений, формирует и отправляет сообщение на сервер*/}

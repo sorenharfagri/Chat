@@ -11,13 +11,13 @@ import NotFound from './components/NotFound/NotFoundPage';
 //NotFound - страница 404 ошибки
 
 const App = () => (
-    <Router>
-        <Switch>
-          <Route path="/" exact component={Join} />
-          <Route path="/chat" exact component={Chat} />
-          <Route component={NotFound}/> 
-        </Switch>
-    </Router>
+  <Router>
+    <Switch>
+      <Route path="/" exact component={Join} />
+      <Route path="/chat" exact component={Chat} />
+      <Route component={NotFound}/> 
+    </Switch>
+  </Router>
 );
 
 export default App;
