@@ -1,151 +1,193 @@
-import React, { useState, useEffect } from 'react';
-import { Redirect } from 'react-router-dom'
-import { useSelector } from 'react-redux';
+import React, {useState, useEffect} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
 import io from "socket.io-client";
 import queryString from 'query-string';
+import {useHistory} from 'react-router-dom'
 
-import Messages from "../Messages/Messages";
-import InfoBar from '../infobar/infoBar';
-import Input from '../Input/input.js';
-import UsersList from '../UsersList/UsersList';
-import ChatJoinForm from "../ChatJoinForm/ChatJoinForm";
+import Messages from "./Messages/Messages";
+import InfoBar from './infobar/infoBar';
+import Input from './Input/input.js';
+import UsersList from './UsersList/UsersList';
+import ChatJoinForm from "./ChatJoinForm/ChatJoinForm";
 
-import VideoChatStreamer from "../VideoChat/VideoChatStreamer";
-import VideoChatClient from "../VideoChat/VideoChatClient";
+import VideoChatStreamer from "./VideoChat/VideoChatStreamer";
+import VideoChatClient from "./VideoChat/VideoChatClient";
 
 import './Chat.css';
 
 //Главный компонент
 //Отвечает непосредственно за чат и его логику
 
-let socket; //Резерв для сокета
+//Резерв для сокета
+let socket;
+const ENDPOINT = "localhost:80/chat"
 
 
-const Chat = ({location}) => {      //location - объект роутера содержащий в себе информацию о текущем url
+const Chat = ({location}) => {
 
-  const [ENDPOINT] = useState( "localhost:80", {reconnect:true} ); //Endpoint сокета
+    //Получение данных о комнате и имени со стора Redux, в случае если пользователь перешёл в чат с Join-а
+    const reduxStoreName = useSelector(state => state.name);
+    const reduxStoreRoom = useSelector(state => state.room);
 
-  //Получение данных о комнате и имени со стора Redux, в случае если пользователь перешёл в чат с Join-а
-  const reduxStoreName = useSelector(state => state.name);
-  const reduxStoreRoom = useSelector(state => state.room);
+    const [queryStr] = useState(queryString.parse(location.search)) //Получение комнаты с query строки
+    const [name, setName] = useState(reduxStoreName); //Получение имени со stor-а, в случае если пользователь перешёл в чат с Join-а
+    const [message, setMessage] = useState(''); //Сообщение
+    const [messages, setMessages] = useState([]); //Коллекция сообщений
+    const [users, setUsers] = useState('');       //Коллекция пользователей комнаты
+    let history = useHistory();
+    const dispatch = useDispatch();
 
-  const [query] = useState(queryString.parse(location.search)) //Получение комнаты с query строки
-  const [name, setName] = useState(reduxStoreName); //Получение имени со stor-а, в случае если пользователь перешёл в чат с Join-а
-  const [message, setMessage] = useState(''); //Сообщение 
-  const [messages, setMessages] = useState([]); //Коллекция сообщений
-  const [users, setUsers] = useState('');       //Коллекция пользователей комнаты
+    //Глобальный статус видеотрансляции.
+    //Используется для отображения окна видеотрансляции, и для сокрытия кнопки включения, когда стрим уже начат.
+    //True означает что трансляция проходит в данный момент.
+    const [globalVideoChatStatus, setGlobalVideoChatStatus] = useState(false);
 
-  const [globalVideoChatStatus, setglobalVideoChatStatus] = useState(false); //Глобальный статус видеотрансляции. Используется для отображения окна видеотрансляции, и для сокрытия самой кнопки, когда стрим уже начат. True означает что трансляция проходи в данный момент.
-  const [localVideoChatStatus, setLocalVideoChatStatus] = useState(false); //Локальный статус видеотрансляции. Используется для логики на стороне стримера, отвечает за её нейминг кнопки включения, и инициализацию видеотрансляиции. True означает что трансляция проходит в данный момент, и клиент - стример.
+    //Локальный статус видеотрансляции.
+    //Используется для логики на стороне стримера, отвечает за нейминг кнопки включения, и инициализацию видеотрансляиции.
+    //True означает что трансляция проходит в данный момент, и клиент - стример.
+    const [localVideoChatStatus, setLocalVideoChatStatus] = useState(false);
 
-  const [connectionStatus, setConnectionStatus] = useState (false); //Стейт отвечающий за соединение с сокетом
+    //Получение комнаты пользователя
+    //Если таковой не найдено - происходит редирект на хоумпейдж
+    const [room] = useState(reduxStoreRoom || queryStr.room || redirect());
 
+    //Получение статуса логина, с помощью функции выше
+    const [loginStatus, setLoginStatus] = useState(getLoginStatus());
 
-  function getRoom () {       //Функция для получения комнаты пользователя
-    let room = reduxStoreRoom; //Получение комнаты со stor-а
-  
-    if(room) return room //Если комната в сторе есть - всё отлично, возвращаем
-    else if(query.room) return query.room //В случае неудачи - пробуем получить комнату с query строки
-    else return "";  //В случае отсутствия у пользователя комнаты - возвращается пустое значение, которое в дальнейшем вернет пользователя на Join.js
-  }
-
-  const [room] = useState(getRoom); //Получение комнаты пользователя c с помощью функции выше
-  
-    
-  function getLoginStatus () {                //Функция для получения информации о том, какие данные имеются у пользователя. (Есть ли имя/комната) Исходя из них будет предложена форма логина/редирект на хоумпейдж
-    if (room && name) return  "HasNameAndRoom";
-    else if(room && !name) return "NoNameHasRoom";
-    else if(!room && !name) return  "NoNameNoRoom";
-  }
-
-  const [loginStatus, setLoginStatus] = useState (getLoginStatus()); //Получение статуса логина, с помощью функции выше
-
-        
-  //Обработка подключения
-  useEffect(() => { 
-
-    if (loginStatus === "NoNameNoRoom") return undefined; //В случае если комнаты и имени не получено - подключение к сокету не происходит, в дальнейшем произойдёт редирект на хоумпейдж
-
-    if (!connectionStatus) {
-      socket = io(ENDPOINT);
-      setConnectionStatus(true)
-    } //Если пользователь не подключен - происходит подключение к сокету, так-же стейт оповещается о том, что дальнейшие подключения не требуются.
-
-    if (loginStatus === "HasNameAndRoom") {      //Если пользователь подключился с хоумпейджа, происходит подключение к комнате.
-      setLoginStatus("ConnectedFromLogin");          //Изменения стейта во избежании повторного подключения
-
-      socket.emit('join', { name, room }, (error) => {         //Подключение к комнате
-        if(error) setLoginStatus("NoNameHasRoom");      //В случае ошибки связанной с никнеймом, пользователю будет повторно предложена форма логина в текущую комнату
-      });
+    //Функция для получения информации о том, какие данные имеются у пользователя. (Есть ли имя/комната)
+    //Исходя из данных пользователю будет предложена форма логина
+    function getLoginStatus() {
+        if (room && name) return "HasNameAndRoom";
+        else return "NoNameHasRoom";
     }
- }, [ENDPOINT, room, name, loginStatus, connectionStatus]);
 
-
-    
-  //Обработка сообщений и списка пользователей, работа с сокетами
-  useEffect(() => {
-    if(!connectionStatus) return undefined;  //Если пользователь не подключен к сокету - получения информации о комнате не происходит.
-
-    socket.on('message', (message) => {     //Получение обработанного сообщения с сервера, добавление в список сообщений, дальнейший его рендер
-      setMessages([...messages, message ]);
-    });
-    
-    socket.on('roomData', ({users}) => {  //Получение данных о пользователях комнаты
-      setUsers(users);
-    });
-
-
-    socket.on("videoChatData", (videoChatStatus) => {  //Получение статуса видеотрансляции
-      setglobalVideoChatStatus(videoChatStatus);
-    });
-
-
-    return () => {                     //Обработка отключения
-      socket.emit('disconnect');
-      socket.off();
+    function redirect() {
+        history.push("/");
     }
-      
-  }, [messages, connectionStatus, loginStatus, globalVideoChatStatus])
 
 
+    //Обработка подключения
+    useEffect(() => {
 
- if (loginStatus === "NoNameNoRoom") return <Redirect to='/' />//Редирект на хоумпейдж, если у пользователя нет комнаты и имени.
+        if (!socket) {
+            socket = io(ENDPOINT);
+        } //Если пользователь не подключен - происходит подключение к сокету, так-же стейт оповещается о том, что дальнейшие подключения не требуются.
 
- if(loginStatus === "NoNameHasRoom") {  //Если пользователь не имеет никнейма, ему будет предложен компонент с формой логина
-    return ( <ChatJoinForm  socket={socket} name={name} setName={setName} room={room} setLoginStatus={setLoginStatus}/>)
-  }
+        if (loginStatus === "HasNameAndRoom") {      //Если пользователь подключился с хоумпейджа, происходит подключение к комнате.
+            setLoginStatus("Connected");          //Изменения стейта во избежании повторного подключения
 
- //Первичная отправка сообщений на сервер. На сервере сообщение обрабатывается (Сообщение получает отправителя, и дату отправки), затем эмитится всей комнате.
- const sendMessage = (event) => {
-    event.preventDefault();
-    if (message) socket.emit('sendMessage', message, () => setMessage('')); //Отправка сообщения, и очистка текущего сообщения, для очистики input-а
- };
+            socket.emit('join', {name, room}, (error) => {         //Подключение к комнате
+                //В случае ошибки связанной с никнеймом, пользователю будет повторно предложена форма логина в текущую комнату
+                if (error) setLoginStatus("NoNameHasRoom");
+            });
+        }
+    }, [room, name, loginStatus]);
 
 
- //InfoBar - Панель сверху, на ней располагаются кнопки
- //VideoChatClient - Логика видеотрансляции на клиенте
- //VideoChatStreamer - Видеотраналсяция на стримере
- //Messages - Коллекция сообщений
- //Input - Инпут сообщения
- //UsersList - Список пользователей комнаты
- return (  
-    <div className="outerContainer">
-      <div className="myContainer">
-        <InfoBar socket={socket} room={room} globalVideoChatStatus={globalVideoChatStatus} setLocalVideoChatStatus={setLocalVideoChatStatus} localVideoChatStatus={localVideoChatStatus}/> {/* Infobar сверху страницы, принимает в себя комнату для отображения ссылки приглашения */}
+    //Обработка сообщений и списка пользователей, работа с сокетами
+    useEffect(() => {
+        if (!socket) return undefined;  //Если пользователь не подключен к сокету - получения информации о комнате не происходит.
 
-        {globalVideoChatStatus ? <VideoChatClient socket={socket}/>
-        : localVideoChatStatus ? <VideoChatStreamer socket={socket} localVideoChatStatus={localVideoChatStatus} setLocalVideoChatStatus={setLocalVideoChatStatus}/> : null}
+        socket.on('message', (message) => {     //Получение обработанного сообщения с сервера, добавление в список сообщений, дальнейший его рендер
+            setMessages([...messages, message]);
+        });
 
-        <Messages messages={messages} name={name}/>                               {/* Модуль отрисовки сообщений, применяется после получения обработанного сообщения с сервера*/}
-        <Input message={message} setMessage={setMessage} sendMessage={sendMessage}/>     {/* Инпут сообщений, формирует и отправляет сообщение на сервер*/}
-      </div>
-     <UsersList users={users}/>                                                      {/* Список пользователей */}
-    </div>
-  );
+        socket.on('initialData', (_messages) => {
+            setMessages([...messages, ..._messages]);
+        })
+
+        socket.on('roomData', ({users}) => {  //Получение данных о пользователях комнаты
+            setUsers(users);
+        });
+
+
+        socket.on("videoChatData", (videoChatStatus) => {  //Получение статуса видеотрансляции
+            setGlobalVideoChatStatus(videoChatStatus);
+        });
+
+
+        return () => {
+            socket.off("message")
+            socket.off('roomData')
+            socket.off('videoChatData')
+            socket.off('initialData')
+        }
+
+    }, [messages, loginStatus, globalVideoChatStatus])
+
+    //Эмитация componentWillUnmount
+    useEffect(() => {
+
+        return () => {
+            console.log("Connection closed")
+            dispatch({type: "SET_NAME", payload: ""});
+            dispatch({type: "SET_ROOM", payload: ""});
+
+            socket.emit('disconnect');
+            socket.disconnect('unauthorized');
+            socket = null;
+        }
+
+    }, [])
+
+
+    //Если пользователь не имеет никнейма, ему будет предложен компонент с формой логина
+    if (loginStatus === "NoNameHasRoom") {
+        return (
+            <ChatJoinForm
+                socket={socket}
+                name={name}
+                setName={setName}
+                room={room}
+                setLoginStatus={setLoginStatus}
+            />
+        )
+    }
+
+    //Первичная отправка сообщений на сервер. На сервере сообщение обрабатывается (Сообщение получает отправителя, и дату отправки), затем эмитится всей комнате.
+    const sendMessage = (event) => {
+        event.preventDefault();
+        //Отправка сообщения, и очистка текущего сообщения, для очистики input-а
+        if (message) socket.emit('sendMessage', message, () => setMessage(''));
+    };
+
+
+    //InfoBar - Панель сверху, на ней располагаются кнопки
+    //VideoChatClient - Логика видеотрансляции на клиенте
+    //VideoChatStreamer - Видеотраналсяция на стримере
+    //Messages - Коллекция сообщений
+    //Input - Инпут сообщения
+    //UsersList - Список пользователей комнаты
+    return (
+        <div className="outerContainer">
+            <div className="myContainer">
+                <InfoBar
+                    socket={socket}
+                    room={room}
+                    globalVideoChatStatus={globalVideoChatStatus}
+                    setLocalVideoChatStatus={setLocalVideoChatStatus}
+                    localVideoChatStatus={localVideoChatStatus}
+                />
+
+                {globalVideoChatStatus ? <VideoChatClient socket={socket}/> : localVideoChatStatus ?
+                    <VideoChatStreamer
+                        socket={socket}
+                        localVideoChatStatus={localVideoChatStatus}
+                        setLocalVideoChatStatus={setLocalVideoChatStatus}
+                    /> : null
+                }
+
+                <Messages messages={messages}
+                          name={name}/> {/* Модуль отрисовки сообщений, применяется после получения обработанного сообщения с сервера*/}
+                <Input message={message} setMessage={setMessage}
+                       sendMessage={sendMessage}/> {/* Инпут сообщений, формирует и отправляет сообщение на сервер*/}
+            </div>
+            <UsersList users={users}/> {/* Список пользователей */}
+        </div>
+    );
 };
 
 
-export {socket};
 export default Chat;
 
 

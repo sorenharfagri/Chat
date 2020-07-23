@@ -7,9 +7,9 @@ const initialState = {
 }
 
 
-function rootReducer(state=initialState, action)
+function rootReducer(state= initialState, action)
 {
-    switch(action.type) {
+    switch (action.type) {
         case "SET_NAME": return Object.assign( {}, state, {name:action.payload} );  //Метод для получения имени в store
         case "SET_ROOM": return Object.assign( {}, state, {room:action.payload} );  //Метод для получения логина в store
         default: return state;
