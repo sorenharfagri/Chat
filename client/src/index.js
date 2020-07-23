@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from 'react-dom';
-import rootReducer from './reducers/rootReducer';
+import rootReducer from './redux/rootReducer';
 import { Provider } from 'react-redux';
 import { createStore } from "redux";
 import App from './App';
@@ -14,5 +14,3 @@ render (
     </Provider>,
     document.querySelector("#root")
 );
-
-export {store};

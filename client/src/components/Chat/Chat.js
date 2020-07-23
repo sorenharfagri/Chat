@@ -14,6 +14,7 @@ import VideoChatStreamer from "./VideoChat/VideoChatStreamer";
 import VideoChatClient from "./VideoChat/VideoChatClient";
 
 import './Chat.css';
+import {resetUserData} from "../../redux/actions";
 
 //Главный компонент
 //Отвечает непосредственно за чат и его логику
@@ -120,10 +121,8 @@ const Chat = ({location}) => {
 
         return () => {
             console.log("Connection closed")
-            dispatch({type: "SET_NAME", payload: ""});
-            dispatch({type: "SET_ROOM", payload: ""});
+            dispatch(resetUserData());
 
-            socket.emit('disconnect');
             socket.disconnect('unauthorized');
             socket = null;
         }

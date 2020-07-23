@@ -38,7 +38,6 @@ const ChatJoinForm = ({socket, name, setName, room, setLoginStatus}) => {
                                 } else {                     //В случае успешного подключения меняется статус логина, поэтому в последующем рендере форма логина не будет отображена
                                     setLoginStatus("ConnectedFromLoginForm");
                                 }
-                                ;
                             });
                         }
                     }}

@@ -4,6 +4,7 @@ import io from "socket.io-client";
 import './Join.css';
 import {useHistory} from 'react-router-dom'
 import {useDispatch} from 'react-redux';
+import {changeName, changeRoom} from "../../redux/actions";
 
 //Данный компонент отвечает за домашнюю страницу, с которой пользователь попадает в чат
 
@@ -86,15 +87,14 @@ const Join = () => {
                     validationStatus = false;
                 } else {
                     //Отправляем в стор никнейм и комнату, в компоненте чата их получим
-                    dispatch({type: "SET_NAME", payload: name});
-                    dispatch({type: "SET_ROOM", payload: room});
+                    dispatch(changeRoom(room));
+                    dispatch(changeName(name));
                     redirect()
                 }
-                ;
                 socket.close();
             });
         }
-        ;
+
 
         return validationStatus;
     }

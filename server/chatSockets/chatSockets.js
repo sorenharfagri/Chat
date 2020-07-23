@@ -174,9 +174,9 @@ const chatSockets = (io) => {
 
                 chat.to(user.room).emit('message', {user: 'admin', text: `${user.name} has left.`}); //Текстовое оповещение пользователей комнаты о ливере
                 chat.to(user.room).emit('roomData', {room: user.room, users: getUsersInRoom(user.room)}); //Обновление данных на клиенте об активных пользователях
-            }
-            ;
+            };
         });
+
     });
 
 
