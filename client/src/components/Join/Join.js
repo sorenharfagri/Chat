@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import uuidv4 from "uuid/v4";
-import io from "socket.io-client";
 import './Join.css';
 import {useHistory} from 'react-router-dom'
-import {useDispatch} from 'react-redux';
-import {changeName, changeRoom} from "../../redux/actions";
+import {useDispatch, useSelector} from 'react-redux';
+import {checkNickname, resetLoginError, setLoginError} from "../../redux/actions/joinActions";
+import {changeName, changeRoom} from "../../redux/actions/userActions";
 
 //Данный компонент отвечает за домашнюю страницу, с которой пользователь попадает в чат
 
@@ -12,12 +12,17 @@ import {changeName, changeRoom} from "../../redux/actions";
 //В данной форме проводится лишь первичная проверка и обработа данных пользователя
 //Подключение к сокетам и комнате происходит в главном компоненте Chat.js
 
-//Ендпоинт сокета
-const ENDPOINT = "localhost:80/chat"
-
 const Join = () => {
+
+    //Локальные имя и пасс
+    //Используются в инпуте
     const [name, setName] = useState('');
     const [room, setRoom] = useState('');
+
+    //Имя и пасс со стора
+    //Если оба будут иметь значения - произойдёт редирект в чат
+    const storeName = useSelector(state => state.user.name);
+    const storeRoom = useSelector(state => state.user.room);
 
     //validation статусы отвечают за placeholder-ы инпутов, обработка ошибок будет вестись через них
     const [nameValidation, setNameValidation] = useState('Name');
@@ -26,6 +31,9 @@ const Join = () => {
     const dispatch = useDispatch();
     const history = useHistory();
 
+    //Ошибка при проверке имени на повторяющееся значение
+    const error = useSelector(state => state.login.loginError);
+
     //Редирект в чат
     //В query можно добавить комнату
     //Чтобы пользователь мог сразу скопировать ссылку для приглашения в чат
@@ -33,7 +41,7 @@ const Join = () => {
         history.push("/chat");
     }
 
-    //Функции для аутентификации
+    //Вспомогательные функции для аутентификации
     //Проводятся первичные проверки на пустое значение
     //Если значение не проходит проверку - возвращается false, плейсхолдер инпута меняются на ошибку
 
@@ -65,39 +73,36 @@ const Join = () => {
         return validationStatus;
     }
 
-
     // @name: string;
     // @room: string;
-    // return boolean
-
-    //Функция для аутентификации, при выборе конкретной комнаты
-    //Проводятся проверки на пустые значения, повторяющийся никнейм в комнате
-    //Если проверки проходят успешно - в стор отправляется имя и комната, происходит редирект в чат
+    //Функция для аутентификации при выборе конкретной комнаты
+    //Проводятся проверки на пустые значения
+    //Если проверки проходят успешно - Redux с помощью сокетов обрабатывает данные
+    //Если никнейм повторяется - loginError в сторе примет ошибку, которую обработает хук
+    //Если же с данными всё отлично - в сторе обновятся никнейм и комната, хук заметив это произведёт редирект в чат
     function auth(name, room) {
-        let validationStatus = checkRoom(room) & checkName(name);
+        if (checkRoom(room) & checkName(name)) {
+            dispatch(checkNickname(name, room))
+        }
+    }
 
-        if (validationStatus) {
-            let socket = io(ENDPOINT);
+    //Хук для обработки ошибки при логине
+    useEffect(() => {
 
-            //Запрос на проверку никнейма. Если такой в комнате уже имеется - возвращается ошибка.
-            socket.emit('checkNickname', {name, room}, (error) => {
-                if (error) {
-                    setNameValidation("Name already exists");
-                    setName("");
-                    validationStatus = false;
-                } else {
-                    //Отправляем в стор никнейм и комнату, в компоненте чата их получим
-                    dispatch(changeRoom(room));
-                    dispatch(changeName(name));
-                    redirect()
-                }
-                socket.close();
-            });
+        if (error) {
+            setNameValidation(error)
+            setName('')
+            dispatch(resetLoginError())
         }
 
+    }, [error])
 
-        return validationStatus;
-    }
+    //Хук отслеживающий имя и комнату со стора
+    //Если такове будут получены - произойдёт редирект в чат
+    useEffect(() => {
+        if (storeName && storeRoom) redirect();
+
+    }, [storeName, storeRoom])
 
 
     return (
@@ -133,11 +138,10 @@ const Join = () => {
                         if (checkName(name)) {
                             //Отправка полученного с инпута имени, и рандомной комнаты в store
                             //Для дальнейшего их получения на странице чата
-                            dispatch({type: "SET_NAME", payload: name});
-                            dispatch({type: "SET_ROOM", payload: uuidv4()});
+                            dispatch(changeName(name));
+                            dispatch(changeRoom(uuidv4()));
                             redirect();
                         }
-                        ;
                     }}
                 >Join random room</button>
 

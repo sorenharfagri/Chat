@@ -5,11 +5,12 @@ const {addUser, removeUser, checkNickname, getUsersInRoom} = require('./users.js
 
 const moment = require('moment');
 
+let roomsWithVideoChat = [];
+let roomsMessages = {};
+
 const chatSockets = (io) => {
 
     let chat = io.of('/chat')
-    let roomsWithVideoChat = [];
-    let roomsMessages = {};
 
     chat.on('connection', socket => {
         console.log('New connection');
@@ -18,7 +19,6 @@ const chatSockets = (io) => {
         //На фронтенде в случае значения true подключается компонент который отвечает за дальнейшую логику видеочата
         //Для стримера на фронтенде используется локальный статус
         let isStreamer = false;
-
         let user;
 
         //Данный listener используется для подключения в комнату

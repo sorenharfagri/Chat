@@ -14,7 +14,7 @@ import VideoChatStreamer from "./VideoChat/VideoChatStreamer";
 import VideoChatClient from "./VideoChat/VideoChatClient";
 
 import './Chat.css';
-import {resetUserData} from "../../redux/actions";
+import {resetUserData} from "../../redux/actions/userActions";
 
 //Главный компонент
 //Отвечает непосредственно за чат и его логику
@@ -27,8 +27,8 @@ const ENDPOINT = "localhost:80/chat"
 const Chat = ({location}) => {
 
     //Получение данных о комнате и имени со стора Redux, в случае если пользователь перешёл в чат с Join-а
-    const reduxStoreName = useSelector(state => state.name);
-    const reduxStoreRoom = useSelector(state => state.room);
+    const reduxStoreName = useSelector(state => state.user.name);
+    const reduxStoreRoom = useSelector(state => state.user.room);
 
     const [queryStr] = useState(queryString.parse(location.search)) //Получение комнаты с query строки
     const [name, setName] = useState(reduxStoreName); //Получение имени со stor-а, в случае если пользователь перешёл в чат с Join-а
@@ -87,22 +87,26 @@ const Chat = ({location}) => {
 
     //Обработка сообщений и списка пользователей, работа с сокетами
     useEffect(() => {
-        if (!socket) return undefined;  //Если пользователь не подключен к сокету - получения информации о комнате не происходит.
+        //Если пользователь не подключен к сокету - получения информации о комнате не происходит.
+        if (!socket) return undefined;
 
-        socket.on('message', (message) => {     //Получение обработанного сообщения с сервера, добавление в список сообщений, дальнейший его рендер
+        //Получение обработанного сообщения с сервера, добавление в список сообщений, дальнейший его рендер
+        socket.on('message', (message) => {
             setMessages([...messages, message]);
         });
 
+        //Получение истории сообщений
         socket.on('initialData', (_messages) => {
             setMessages([...messages, ..._messages]);
         })
 
-        socket.on('roomData', ({users}) => {  //Получение данных о пользователях комнаты
+        //Получение данных о пользователях комнаты
+        socket.on('roomData', ({users}) => {
             setUsers(users);
         });
 
-
-        socket.on("videoChatData", (videoChatStatus) => {  //Получение статуса видеотрансляции
+        //Получение статуса видеотрансляции
+        socket.on("videoChatData", (videoChatStatus) => {
             setGlobalVideoChatStatus(videoChatStatus);
         });
 
@@ -123,7 +127,7 @@ const Chat = ({location}) => {
             console.log("Connection closed")
             dispatch(resetUserData());
 
-            socket.disconnect('unauthorized');
+            socket.close()
             socket = null;
         }
 

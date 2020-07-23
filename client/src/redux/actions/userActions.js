@@ -1,4 +1,4 @@
-import {RESET_USER_DATA, SET_NAME, SET_ROOM} from "./types";
+import {RESET_USER_DATA, SET_NAME, SET_ROOM} from "../types";
 
 export function changeName(name) {
     return {
