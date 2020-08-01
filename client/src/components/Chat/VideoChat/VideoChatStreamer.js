@@ -1,5 +1,7 @@
 import React, {useState, useEffect} from "react";
 import "./VideoChat.css";
+import {socket} from "../../../redux/actions/sockets.js";
+import {startStream} from "../../../redux/actions/chatActions";
 
 //Данный компонент отвечает за логику видеотрансляции на стримере
 
@@ -19,18 +21,16 @@ const iceServers = {
     'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]
 };
 
-const VideoChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatus}) => {
+const VideoChatStreamer = ({isStreamer, setIsStreamer}) => {
     const [localVideoref] = useState(React.createRef());
 
 
     useEffect(() => {
-
-
         //Методы для getUserMedia
 
         const failure = (e) => {
             alert(e)          //Событие, в случае отказа
-            setLocalVideoChatStatus(!localVideoChatStatus)
+            setIsStreamer(!isStreamer)
         }
         //Создание подключения, прослушивание ice кандидатов
 
@@ -38,7 +38,7 @@ const VideoChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatu
             stream = translation;                                //Получение медиа в переменную, для дальнейшего добавления трансляций
 
             localVideoref.current.srcObject = stream;            //Получаем локальный стрим для наблюдения своей физиономии на видеокамере
-            socket.emit("videoChatConnect");                    //Оповещаем клиентов в комнате о начале трансляции
+            startStream()                    //Оповещаем клиентов в комнате о начале трансляции
         };
 
         navigator.mediaDevices.getUserMedia(constraints)  //Получение разрешение на использование девайсов от пользователя
@@ -52,7 +52,7 @@ const VideoChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatu
             }
         };
 
-    }, [localVideoref, socket, localVideoChatStatus, setLocalVideoChatStatus]);
+    }, [localVideoref, isStreamer, setIsStreamer]);
 
 
     useEffect(() => {
@@ -97,12 +97,13 @@ const VideoChatStreamer = ({socket, localVideoChatStatus, setLocalVideoChatStatu
 
             createPeerConnection(socketID, pc => {  //Создание нового пира, уникальным идентификатором подключения служит socketid, который передаётся с сервера.
 
-                if (pc)
+                if (pc) {
                     pc.createOffer(offerOptions) //В случае успешного создания формируем оффер, устанавливаем локальное описание
-                        .then(sdp => {
-                            pc.setLocalDescription(sdp);
-                            socket.emit("OfferFromStreamer", sdp, socketID);       //Отправляем описание на клиента
-                        })
+                    .then(sdp => {
+                         pc.setLocalDescription(sdp);
+                         socket.emit("OfferFromStreamer", sdp, socketID);       //Отправляем описание на клиента
+                     })
+                }
             })
         });
 

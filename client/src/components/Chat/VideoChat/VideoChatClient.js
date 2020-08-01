@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from "react";
 import "./VideoChat.css";
+import { socket } from "../../../redux/actions/sockets.js";
 
 //Данный модуль отвечает за видеочат на стороне клиента
 
@@ -10,9 +11,8 @@ const iceServers = {
     'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]
 };
 
-const VideoChatClient = ({socket}) => {
+const VideoChatClient = () => {
     const [localVideoref] = useState(React.createRef()); //Ссылка для отображения стрима
-    const [socketStatus, setSocketStatus] = useState(false); //Статус используется для активизации лисенеров на сокетах
 
     //Работа с сокетами
     useEffect(() => {
@@ -85,7 +85,7 @@ const VideoChatClient = ({socket}) => {
             socket.off(`GetCandidates`);
         }
 
-    }, [socketStatus, socket]);
+    }, []);
 
 
     //Создаём новое подключение, обрабатываем логику на пире
@@ -110,8 +110,6 @@ const VideoChatClient = ({socket}) => {
             }
         };
 
-        setSocketStatus(true); //Подключаем сокеты
-
 
         //Отправляем оповещение на сервер о появлении нового пира
         //Сервер в свою очередь уведомит об этом стримера
@@ -123,7 +121,7 @@ const VideoChatClient = ({socket}) => {
             pc.close();
         };
 
-    }, [socket, localVideoref]);
+    }, [localVideoref]);
 
 
     return (

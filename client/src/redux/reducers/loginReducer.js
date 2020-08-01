@@ -7,7 +7,7 @@ const initialJoinState = {
     loginError: ""
 }
 
-export function joinReducer(state = initialJoinState, action) {
+export function loginReducer(state = initialJoinState, action) {
     switch (action.type) {
         case SET_LOGIN_ERROR: return {...state, loginError: action.payload}
         default: return state;

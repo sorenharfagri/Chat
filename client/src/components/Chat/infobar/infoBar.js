@@ -5,22 +5,22 @@ import closeIcon from '../../../icons/closeIcon.png';
 import InviteButton from "./InviteButton/InviteButton";
 import WebcamButton from "./WebcamButton/WebcamButton";
 
-//Данный компонент содержит в себе кнопку с инвайтом в комнату
+//Компонент является панелью сверху страницы
+//Отвечает за кнопки на ней
 
-const InfoBar = ({room, globalVideoChatStatus, setLocalVideoChatStatus, socket, localVideoChatStatus}) => {
+const InfoBar = ({room, isStream, setIsStreamer, isStreamer}) => {
 
-    //InviteButton - овтечает за инвайт пользователя в комнату
+    //InviteButton - отвечает за инвайт пользователя в комнату
     //WebcamButton - отвечает за включение/отключение видеотрансляции
     return (
         <div className="infoBar">
             <div className="leftInnerContainer">
                 <img className="onlineIcon" src={onlineIcon} alt="online"></img>
                 <InviteButton room={room}/>
-                {!globalVideoChatStatus ?
+                {!isStream ?
                     <WebcamButton
-                        socket={socket}
-                        setLocalVideoChatStatus={setLocalVideoChatStatus}
-                        localVideoChatStatus={localVideoChatStatus}
+                        setIsStreamer={setIsStreamer}
+                        isStreamer={isStreamer}
                     />
                     : null}
             </div>

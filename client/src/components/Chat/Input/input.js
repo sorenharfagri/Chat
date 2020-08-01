@@ -1,10 +1,22 @@
 import React, {useState} from 'react';
 import './Input.css';
+import {emitMessage} from "../../../redux/actions/sockets";
 
 
 //Компонент инпута чата
 
-const Input = ({message, setMessage, sendMessage}) => {
+const Input = () => {
+    const [message, setMessage] = useState(''); //Сообщение
+
+    //Первичная отправка сообщений на сервер. На сервере сообщение обрабатывается (Сообщение получает отправителя, и дату отправки), затем эмитится всей комнате.
+    const sendMessage = (event) => {
+        event.preventDefault();
+        //Отправка сообщения, и очистка текущего сообщения, для очистики input-а
+        if (message) {
+            emitMessage(message);
+            setMessage('')
+        }
+    };
 
 
     //State для обработки ошибок input-а, с помощью его placeholder-а
@@ -24,7 +36,6 @@ const Input = ({message, setMessage, sendMessage}) => {
             sendMessage(event);
             setValidation("Type a message..")
         }
-        ;
     };
 
     return (

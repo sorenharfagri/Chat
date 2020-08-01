@@ -14,12 +14,13 @@ const chatSockets = (io) => {
 
     chat.on('connection', socket => {
         console.log('New connection');
+        let user;
 
         //Статус используется для эмита на пользователей комнаты, в которой проходит видеотрансляция.
         //На фронтенде в случае значения true подключается компонент который отвечает за дальнейшую логику видеочата
         //Для стримера на фронтенде используется локальный статус
-        let isStreamer = false;
-        let user;
+        //Пот подключении в комнату принимает значение false
+        let isStreamer;
 
         //Данный listener используется для подключения в комнату
         socket.on('join', ({name, room}, callback) => {
@@ -29,9 +30,12 @@ const chatSockets = (io) => {
             const {error, user: newUser} = addUser({id: socket.id, name, room});
 
             //В случае ошибки подключение к комнате не происходит, callback-ом отправляется статус ошибки
-            if (error) return callback(error)
+            if (error) {
+                return callback(error)
+            }
 
             user = newUser;
+            isStreamer = false;
             //В случае успешной валидации пользователь подключается к полученной ранее комнате
             socket.join(user.room);
 
@@ -63,7 +67,7 @@ const chatSockets = (io) => {
         });
 
         //Ожидаем сообщение от клиента
-        socket.on('sendMessage', (message, callback) => {
+        socket.on('sendMessage', message => {
             const date = moment().format('LTS'); //Формирование даты отправки
 
             //Формируем сообщение
@@ -72,15 +76,6 @@ const chatSockets = (io) => {
             roomsMessages[user.room].push(msg);
             //Отправляем сообщение в комнату
             chat.to(user.room).emit('message', msg);
-
-            callback();
-        });
-
-        //Проверка на повторяющийся никнейм в комнате
-        socket.on('checkNickname', ({name, room}, callback) => {
-            const error = checkNickname({name, room});
-            if (error) return callback(error);
-            callback();
         });
 
 
@@ -150,8 +145,12 @@ const chatSockets = (io) => {
             chat.to(clientSocketID).emit(`GetCandidates`, candidate);
         });
 
-        socket.on('disconnect', () => {
-
+        //Функция для отключения пользователя из комнаты
+        //Удаляет пользователя из списка пользователей комнаты
+        //Очищает массив сообщений, если комната отныне пуста
+        //В случае если пользователь был стримером - удаляет комнату из списка комнат со стримом,
+        //И оповещает пользователей об окончании трансляции
+        function disconnect() {
             let user = removeUser(socket.id);           //Удаление из списка активных пользователей комнаты при дисконнекте
 
             if (user) {
@@ -175,6 +174,17 @@ const chatSockets = (io) => {
                 chat.to(user.room).emit('message', {user: 'admin', text: `${user.name} has left.`}); //Текстовое оповещение пользователей комнаты о ливере
                 chat.to(user.room).emit('roomData', {room: user.room, users: getUsersInRoom(user.room)}); //Обновление данных на клиенте об активных пользователях
             };
+        }
+
+        //Принудительный дисконнект из комнаты
+        socket.on('disconnectFromRoom', callback => {
+            disconnect();
+            callback("Success");
+        });
+
+
+        socket.on('disconnect', () => {
+            disconnect();
         });
 
     });

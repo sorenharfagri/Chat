@@ -1,10 +1,32 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import "./ChatJoinForm.css";
+import {joinRoom, resetLoginError} from "../../../redux/actions/loginActions";
+import {useSelector, useDispatch} from "react-redux";
+import { checkName } from "../../Join/loginMethods.js";
 
 //Компонент формы логина, который пользователь получает на странице чата, если он не имеет никнейма
 
-const ChatJoinForm = ({socket, name, setName, room, setLoginStatus}) => {
-    const [validationStatus, setValidationStatus] = useState('Name'); //Инпут формы, с его помощью отображаются ошибки
+const ChatJoinForm = ({room}) => {
+    //Инпут формы, с его помощью отображаются ошибки
+    const [nameValidation, setNameValidation] = useState('Name');
+    //Ошибка при проверке имени на повторяющееся значение
+    const error = useSelector(state => state.login.loginError);
+
+    const [name, setName] = useState('');
+    const dispatch = useDispatch();
+
+
+
+    //Хук для обработки ошибки при логине
+    useEffect(() => {
+        if (error) {
+            setNameValidation(error)
+            setName('')
+            dispatch(resetLoginError())
+        }
+
+    }, [error])
+
 
     return (
         <div className="joinOuterContainer">
@@ -12,7 +34,7 @@ const ChatJoinForm = ({socket, name, setName, room, setLoginStatus}) => {
                 <h1 className="heading">Login</h1>
                 <div>
                     <input
-                        placeholder={validationStatus}
+                        placeholder={nameValidation}
                         value={name}
                         className="joinInput"
                         type="text"
@@ -24,22 +46,8 @@ const ChatJoinForm = ({socket, name, setName, room, setLoginStatus}) => {
                     className="button mt-20"
                     type="submit"
                     onClick={event => { //При нажатии кнопки происходит валидация
-                        let validNickname = name.replace(/\s/g, ''); //Проверка инпута на отсутствие значения
-                        if (validNickname === "") {
-
-                            event.preventDefault();
-                            setValidationStatus("Name cannot be empty");  //Устанавлиаем статус ошибки в плейсхолдер инпута
-                            setName("");                                 //Очищаем инпут
-                        } else {
-                            socket.emit('join', {name, room}, (error) => {  //Запрос на подключение к комнате.
-                                if (error) {
-                                    setValidationStatus("Name already exists");  //В случае ошибки отображаем её в placeholder-е
-                                    setName("");
-                                } else {                     //В случае успешного подключения меняется статус логина, поэтому в последующем рендере форма логина не будет отображена
-                                    setLoginStatus("ConnectedFromLoginForm");
-                                }
-                            });
-                        }
+                        event.preventDefault();
+                        if (checkName(name, setName, setNameValidation)) dispatch(joinRoom(name, room))
                     }}
                 >Sign In
                 </button>

@@ -8,7 +8,7 @@ import App from './App';
 
 
 //Создаём стор redux-а
-const store = createStore(
+export const store = createStore(
     rootReducer,
     compose (
         applyMiddleware(thunk),
